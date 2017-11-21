@@ -1,36 +1,13 @@
-package main
+package audio_ghost
 
 import (
 	"fmt"
-	_ "io/ioutil"
-	"log"
-	"flag"
-	"os"
 	"path/filepath"
-	"strings"
+	"log"
+	"os"
 	"io/ioutil"
+	"strings"
 )
-
-type Audiobook struct {
-	Name  string
-	Path  string
-	Files []string
-}
-
-type Audiobooks map[string]*Audiobook
-
-type Collection struct {
-	Name string
-	Path string
-	Audiobooks Audiobooks
-	Collections Collections
-}
-
-type Collections map[string]*Collection
-
-func consume(interface{}) int {
-	return 0
-}
 
 func getBookName(path string) string {
 	//currentPath := filepath.Dir(path)
@@ -54,7 +31,7 @@ func addFiles(book *Audiobook) filepath.WalkFunc {
 }
 
 func isNestedPath(audiobooks Audiobooks, path string) bool {
-	for k,_ := range audiobooks {
+	for k, _ := range audiobooks {
 		if strings.HasPrefix(path, k) {
 			return true
 		}
@@ -81,7 +58,6 @@ func CreateAudioBook(audiobooks Audiobooks, path string) error {
 			Path: path,
 		}
 
-
 		err := filepath.Walk(path, addFiles(&tmpbook))
 		if err != nil {
 			log.Fatal(err)
@@ -93,7 +69,7 @@ func CreateAudioBook(audiobooks Audiobooks, path string) error {
 	return nil
 }
 
-func scandir(audiobooks Audiobooks) filepath.WalkFunc {
+func Scandir(audiobooks Audiobooks) filepath.WalkFunc {
 
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -102,18 +78,14 @@ func scandir(audiobooks Audiobooks) filepath.WalkFunc {
 		}
 
 		// Look inside if this might be a root folder
-		fmt.Println("Checking:",path)
+		//fmt.Println("Checking:",path)
 		if info.IsDir() {
 			files, err := ioutil.ReadDir(path)
-			if err != nil {log.Print(err); return nil; }
-			for _,v := range files {
-				if v.Name() == "ab_root" {
+			if err != nil {
+				log.Print(err); return nil; }
+			for _, v := range files {
+				if v.Name() == "ab_root" || strings.HasSuffix(v.Name(), "mp3") {
 					fmt.Println("Found a root file:", path)
-					CreateAudioBook(audiobooks,path)
-					return nil
-				}
-				if strings.HasSuffix(v.Name(),"mp3") {
-					fmt.Println("Found a mp3 file:", path)
 					CreateAudioBook(audiobooks, path)
 					return nil
 				}
@@ -122,32 +94,4 @@ func scandir(audiobooks Audiobooks) filepath.WalkFunc {
 		}
 		return nil
 	}
-}
-
-func main() {
-
-	var directory string
-	books := make(Audiobooks)
-
-	flag.StringVar(&directory, "dir", "./", "directory to scan")
-	flag.Parse()
-
-	fmt.Println("Scanning directory", directory)
-
-	err := filepath.Walk(directory, scandir(books))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("\n\nResults:")
-	for _, f := range books {
-		fmt.Println("Name: ",f.Name);
-		fmt.Println("Path: ", f.Path);
-		fmt.Println("Files: ")
-		for _, mp3 := range f.Files {
-			fmt.Print(mp3, ",")
-		}
-		fmt.Println()
-	}
-
 }
