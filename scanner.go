@@ -1,4 +1,4 @@
-package audio_ghost
+package audioghost
 
 import (
 	"fmt"

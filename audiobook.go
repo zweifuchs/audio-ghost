@@ -1,4 +1,4 @@
-package audio_ghost
+package audioghost
 
 type Audiobook struct {
 	Name  string

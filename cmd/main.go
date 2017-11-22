@@ -8,11 +8,13 @@ import (
 	_ "os"
 	"path/filepath"
 	_ "strings"
-	ag "github.com/zweifuchs/audio-ghost"
+	ag "github.com/zweifuchs/audioghost"
+	dd "github.com/zweifuchs/audioghost/debug"
+	"time"
 )
 
 func main() {
-
+	defer dd.TimeTracker(time.Now(),"main")
 	var directory string
 	books := make(ag.Audiobooks)
 

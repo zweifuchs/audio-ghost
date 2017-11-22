@@ -1,4 +1,4 @@
-package audio_ghost
+package audioghost
 
 type Collection struct {
 	Name        string
