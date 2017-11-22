@@ -6,7 +6,6 @@ import (
 	"log"
 	"flag"
 	_ "os"
-	"path/filepath"
 	_ "strings"
 	ag "github.com/zweifuchs/audioghost"
 	dd "github.com/zweifuchs/audioghost/debug"
@@ -18,12 +17,13 @@ func main() {
 	var directory string
 	books := make(ag.Audiobooks)
 
+
 	flag.StringVar(&directory, "dir", "./", "directory to scan")
 	flag.Parse()
 
 	fmt.Println("Scanning directory", directory)
 
-	err := filepath.Walk(directory, ag.Scandir(books))
+	err := ag.ScanDir(directory, books)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,10 +32,11 @@ func main() {
 	for _, f := range books {
 		fmt.Println("Name: ",f.Name);
 		fmt.Println("Path: ", f.Path);
-		fmt.Println("Files: ")
-		for _, mp3 := range f.Files {
-			fmt.Print(mp3, ",")
-		}
+		fmt.Println("Duration:", f.Playtime)
+		//fmt.Println("Files: ")
+		//for _, mp3 := range f.Files {
+		//	fmt.Print(mp3, ",")
+		//}
 		fmt.Println()
 	}
 
