@@ -15,21 +15,27 @@ import (
 func main() {
 	defer dd.TimeTracker(time.Now(),"main")
 	var directory string
-	books := make(ag.Audiobooks)
-
-
 	flag.StringVar(&directory, "dir", "./", "directory to scan")
 	flag.Parse()
-
 	fmt.Println("Scanning directory", directory)
 
-	err := ag.ScanDir(directory, books)
+	books := make(ag.Audiobooks)
+	collections := make(ag.Collections)
+	bigCollection := ag.Collection{
+		Name: "all",
+		Path: directory,
+		Audiobooks: &books,
+		Collections: &collections,
+		Playtime: 0,
+	}
+
+	err := ag.ScanDir(bigCollection, directory)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("\n\nResults:")
-	for _, f := range books {
+	for _, f := range *bigCollection.Audiobooks {
 		fmt.Println("Name: ",f.Name);
 		fmt.Println("Path: ", f.Path);
 		fmt.Println("Duration:", f.Playtime)
