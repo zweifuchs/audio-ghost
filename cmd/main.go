@@ -15,11 +15,11 @@ import (
 func main() {
 	defer dd.TimeTracker(time.Now(),"main")
 
-	var c config.Config
-	c.ReadCmd()
+	c := config.GetConfig()
 	directory := c.RootDirecotry()
 	librarian := new(ag.Librarian)
+	librarian.Init(config.GetConfig())
+
 	fmt.Println("Scanning directory", directory)
-	librarian.Init(&c)
 
 }
