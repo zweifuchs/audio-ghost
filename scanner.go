@@ -45,12 +45,12 @@ func walkDir(lib *Librarian) filepath.WalkFunc {
 					if v.Name() == "ab_root" {
 						fmt.Println("Found a root file:", path)
 					}
-					lib.allAudioBooks.audiobooks.CreateAudioBook(path)
+					lib.audiobooks.CreateAudioBook(path)
 					return nil
 				}
 				if v.Name() == "collection" {
 					fmt.Println("Found a New Collection:", path)
-					lib.allCollections.collections.AddCollection(path, getLastPathDir(path))
+					lib.collections.AddCollection(path, getLastPathDir(path))
 					return nil
 				}
 			}

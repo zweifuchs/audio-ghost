@@ -30,6 +30,13 @@ func (col *Collection) AddAudioBook(book *Audiobook) error {
 	return nil
 }
 
+func NewCollection() Collection {
+	return Collection{
+		Audiobooks: make(map[string]*Audiobook),
+		Collections: make(map[string]*Collection),
+	}
+}
+
 func (col *Collection) String() {
 	for _, f := range col.Audiobooks {
 		fmt.Println("Name: ", f.Name);
@@ -51,6 +58,6 @@ func (col Collections) AddCollection(path string, name string) bool {
 
 	}
 	fmt.Println("Added to Collections:", path)
-	col[path] = &Collection{name, path,nil,make(map[string]*Collection),0}
+	col[path] = &Collection{name, path, make(map[string]*Audiobook),make(map[string]*Collection),0}
 	return true
 }
