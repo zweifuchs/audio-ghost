@@ -2,70 +2,55 @@ package audioghost
 
 import (
 	"time"
-	"strings"
-	"log"
+	//"strings"
+	//"log"
 	"fmt"
 )
 
 type Collection struct {
 	Name        string
 	Path        string
-	Audiobooks  *Audiobooks
-	Collections *Collections
+	Audiobooks  Audiobooks
+	Collections Collections
 	Playtime    time.Duration
 }
 
-
 type Collections map[string]*Collection
 
-func (col *Collection) AddAudioBook(audioBooks Audiobooks, path string) error {
+//func (col *Collection) AddAudioBook(path string) error {
+//	fmt.Println("Adding Book to:", col.Path)
+//	col.Audiobooks.CreateAudioBook(path)
+//	return nil
+//}
 
+func (col *Collection) AddAudioBook(book *Audiobook) error {
+	fmt.Println("Adding Book to:", col.Name)
+	col.Playtime += book.Playtime
+	col.Audiobooks.AddAudioBook(book)
 	return nil
 }
 
-func (col *Collection) IsDuplicate(path string) bool {
-	for k, _ := range *col.Audiobooks {
-		if strings.HasPrefix(path, k) {
-			return true
-		}
+func (col *Collection) String() {
+	for _, f := range col.Audiobooks {
+		fmt.Println("Name: ", f.Name);
+		fmt.Println("Path: ", f.Path);
+		fmt.Println("Duration:", f.Playtime)
+		//fmt.Println("Files: ")
+		//for _, mp3 := range f.Files {
+		//	fmt.Print(mp3, ",")
+		//}
+		fmt.Println()
 	}
-
-	for _,v := range *col.Collections {
-		if v.IsDuplicate(path) {
-			return true
-		}
-
-	}
-
-	return false
 }
 
-func (col Collections) AddCollection(path string) {
-
+func (col Collections) AddCollection(path string, name string) bool {
 	for _, v := range col {
-
 		if v.Path == path {
-			return
+			return false
 		}
 
 	}
-
-	if _, ok := col[path]; ok {
-		fmt.Printf("%v already in list\n", path)
-		return
-	}
-	books := make(Audiobooks)
-	collections := make(Collections)
-	result := Collection{
-		Name: path,
-		Path: path,
-		Audiobooks: &books,
-		Collections: &collections,
-		Playtime: 0,
-	}
-	col[path] = &result
-	err := ScanDir(result, path)
-	if err != nil {
-		log.Fatal(err)
-	}
+	fmt.Println("Added to Collections:", path)
+	col[path] = &Collection{name, path,nil,make(map[string]*Collection),0}
+	return true
 }

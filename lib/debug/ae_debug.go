@@ -11,5 +11,5 @@ func Consume(interface{}) error {
 
 func TimeTracker(start time.Time, name string) {
 	elaspsed := time.Since(start)
-	log.Printf("%s took %s", name, elaspsed)
+	log.Printf("TimeLog: %s took %s", name, elaspsed)
 }

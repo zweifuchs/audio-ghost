@@ -103,3 +103,7 @@ func (audiobooks Audiobooks) CreateAudioBook (path string) error {
 	return nil
 }
 
+func (audiobooks Audiobooks) AddAudioBook(book *Audiobook) error {
+	audiobooks[book.Path] = book
+	return nil
+}
