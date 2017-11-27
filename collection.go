@@ -8,6 +8,7 @@ import (
 )
 
 type Collection struct {
+	Id		int
 	Name        string
 	Path        string
 	Audiobooks  Audiobooks
@@ -62,7 +63,7 @@ func (col *Collection) AddToCollections(c *Collection) bool {
 	return true
 }
 
-func (col Collections) AddCollection(path string, name string) bool {
+func (col Collections) CreateAndAddCollection(path string, name string) bool {
 	for _, v := range col {
 		if v.Path == path {
 			return false
@@ -70,6 +71,11 @@ func (col Collections) AddCollection(path string, name string) bool {
 
 	}
 	fmt.Println("Added to Collections:", path)
-	col[path] = &Collection{name, path, make(map[string]*Audiobook), make(map[string]*Collection), 0}
+	col[path] = &Collection{0,name, path, make(map[string]*Audiobook), make(map[string]*Collection), 0}
 	return true
+}
+
+func (col Collections) AddCollection(c *Collection)  {
+	fmt.Println("Added to Collections:", c.Path)
+	col[c.Path] = c
 }

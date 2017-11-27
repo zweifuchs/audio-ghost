@@ -1,11 +1,11 @@
 package audioghost
 
 import (
-	"database/sql"
+	_ "database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/zweifuchs/audioghost/lib/config"
-	"log"
+	//"log"
 	"sort"
 	"strings"
 )
@@ -71,15 +71,18 @@ func (l *Librarian) Init(c *config.Config) {
 	l.audiobooks = make(Audiobooks)
 	l.collections = make(Collections)
 
-	l.collections.AddCollection(l.conf.RootDirecotry(), "root")
+	l.collections.CreateAndAddCollection(l.conf.RootDirecotry(), "root")
 
 
 	// Force Rescan?
 	if l.conf.Rescan {
-		err := ScanDir(l, directory)
-		if err != nil {
-			log.Fatal(err)
-		}
+		err := ScanDir(&l.audiobooks, &l.collections, directory)
+		checkErr(err)
+	} else {
+		err := getBooks(&l.audiobooks)
+		checkErr(err)
+		err = getCollections(&l.collections)
+		checkErr(err)
 	}
 
 	// Get DB Data
@@ -104,78 +107,7 @@ func (l *Librarian) Init(c *config.Config) {
 		}
 	}
 
-	/*
-	 DB STUFF
-	*/
-	fmt.Println("Saving to DB:")
-	db, err := sql.Open("mysql", "audioghost:123456@/audioghost")
-	if err != nil {
-		panic(err.Error())
-	}
-	defer db.Close()
-	err = db.Ping()
-	if err != nil {
-		// do something here
-	}
 
-	/*
-	CREAT TABLE
-	*/
-	db.Exec("DROP TABLE audiobooks;");
-	db.Exec("DROP TABLE collections;");
-	res, err := db.Exec(`
-		CREATE TABLE IF NOT EXISTS audiobooks
-		 (
-		    ID INT NOT NULL AUTO_INCREMENT,
-		    PRIMARY KEY(ID),
-		    Name VARCHAR(255),
-		    Path VARCHAR(2047),
-		    Files TEXT,
-		    Playtime BIGINT,
-		    Description TEXT
-		 );
-	`)
-	res, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS collections
-		 (
-		    ID INT NOT NULL AUTO_INCREMENT,
-		    PRIMARY KEY(ID),
-		    Name VARCHAR(255),
-		    Path VARCHAR(2047),
-		    Playtime BIGINT
-		 );
-	`)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	/*
-	INSERT AUDIOBOOKS
-	*/
-
-	//for _book := range l.audiobooks {
-	//	fmt.Printf("%t, %s \n",book, book)
-	//}
-
-	for _,book := range l.audiobooks {
-		_, err := db.Exec("INSERT INTO audiobooks (Name,Path,Files,Playtime,Description) VALUES (?,?,?,?,?)",
-			book.Name,
-			book.Path,
-			strings.Join(book.Files,","),
-			book.Playtime,
-			book.Description,
-		)
-		checkErr(err)
-	}
-
-	for _, collection := range l.collections {
-		_, err := db.Exec("INSERT INTO collections (Name,Path,Playtime) VALUES (?,?,?)",
-			collection.Name,
-			collection.Path,
-			collection.Playtime,
-		)
-		checkErr(err)
-	}
 
 	//	//defer stmt.Close()
 	//
@@ -184,6 +116,6 @@ func (l *Librarian) Init(c *config.Config) {
 	//	//stmt.Close()
 	//}
 
-	fmt.Println("Db result:", res)
+	// fmt.Println("Db result:", res)
 
 }

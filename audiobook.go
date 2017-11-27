@@ -15,6 +15,7 @@ type Audiobook struct {
 	Id          int
 	Name        string
 	Path        string
+	FilesAsText string
 	Files       []string
 	Playtime    time.Duration
 	Description string
