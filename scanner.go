@@ -2,17 +2,17 @@ package audioghost
 
 import (
 	"fmt"
-	"path/filepath"
+	"io/ioutil"
 	"log"
 	"os"
-	"io/ioutil"
+	"path/filepath"
 	"strings"
 )
 
 func getBookName(path string) string {
 	//currentPath := filepath.Dir(path)
 	currentBook := filepath.ToSlash(path)
-	return currentBook[strings.LastIndex(currentBook, "/") + 1:]
+	return currentBook[strings.LastIndex(currentBook, "/")+1:]
 }
 
 func getLastPathDir(path string) string {
@@ -38,7 +38,8 @@ func walkDir(lib *Librarian) filepath.WalkFunc {
 			files, err := ioutil.ReadDir(path)
 			if err != nil {
 				log.Print(err)
-			return err; }
+				return err
+			}
 
 			for _, v := range files {
 				if v.Name() == "ab_root" || strings.HasSuffix(v.Name(), "mp3") {

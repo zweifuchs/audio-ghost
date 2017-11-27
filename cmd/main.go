@@ -16,6 +16,7 @@ func main() {
 	defer dd.TimeTracker(time.Now(),"main")
 
 	c := config.GetConfig()
+	fmt.Printf(c.RootDirecotry())
 	directory := c.RootDirecotry()
 	librarian := new(ag.Librarian)
 	librarian.Init(config.GetConfig())

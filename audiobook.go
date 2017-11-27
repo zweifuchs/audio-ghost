@@ -2,20 +2,22 @@ package audioghost
 
 import (
 	"fmt"
-	"path/filepath"
-	"log"
-	"strings"
-	"os"
-	"time"
 	"github.com/tcolgate/mp3"
+	"log"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
 	// dd "github.com/zweifuchs/audioghost/debug"
 )
 
 type Audiobook struct {
-	Name  string
-	Path  string
-	Files []string
-	Playtime time.Duration
+	Id          int
+	Name        string
+	Path        string
+	Files       []string
+	Playtime    time.Duration
+	Description string
 }
 
 type Audiobooks map[string]*Audiobook
@@ -63,9 +65,7 @@ func calcmp3length(path string) (time.Duration, error) {
 
 }
 
-
-
-func (audiobooks Audiobooks) isDuplicate (path string) bool {
+func (audiobooks Audiobooks) isDuplicate(path string) bool {
 	for k, _ := range audiobooks {
 		if strings.HasPrefix(path, k) {
 			return true
@@ -74,7 +74,7 @@ func (audiobooks Audiobooks) isDuplicate (path string) bool {
 	return false
 }
 
-func (audiobooks Audiobooks) CreateAudioBook (path string) error {
+func (audiobooks Audiobooks) CreateAudioBook(path string) error {
 	bookName := getBookName(path)
 
 	if _, ok := audiobooks[path]; ok {
@@ -82,7 +82,7 @@ func (audiobooks Audiobooks) CreateAudioBook (path string) error {
 		return nil
 	} else {
 		// check if path is already used
-		if  audiobooks.isDuplicate(path) {
+		if audiobooks.isDuplicate(path) {
 			fmt.Printf("%v already in list\n", bookName)
 			return nil
 		}
@@ -111,4 +111,3 @@ func (audiobooks Audiobooks) RemoveAudioBook(book *Audiobook) error {
 	delete(audiobooks, book.Path)
 	return nil
 }
-

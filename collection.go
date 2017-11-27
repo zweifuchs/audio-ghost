@@ -39,15 +39,15 @@ func (col *Collection) RemoveAudioBook(book *Audiobook) error {
 
 func NewCollection() Collection {
 	return Collection{
-		Audiobooks: make(map[string]*Audiobook),
+		Audiobooks:  make(map[string]*Audiobook),
 		Collections: make(map[string]*Collection),
 	}
 }
 
 func (col *Collection) String() {
 	for _, f := range col.Audiobooks {
-		fmt.Println("Name: ", f.Name);
-		fmt.Println("Path: ", f.Path);
+		fmt.Println("Name: ", f.Name)
+		fmt.Println("Path: ", f.Path)
 		fmt.Println("Duration:", f.Playtime)
 		//fmt.Println("Files: ")
 		//for _, mp3 := range f.Files {
@@ -62,7 +62,6 @@ func (col *Collection) AddToCollections(c *Collection) bool {
 	return true
 }
 
-
 func (col Collections) AddCollection(path string, name string) bool {
 	for _, v := range col {
 		if v.Path == path {
@@ -71,6 +70,6 @@ func (col Collections) AddCollection(path string, name string) bool {
 
 	}
 	fmt.Println("Added to Collections:", path)
-	col[path] = &Collection{name, path, make(map[string]*Audiobook),make(map[string]*Collection),0}
+	col[path] = &Collection{name, path, make(map[string]*Audiobook), make(map[string]*Collection), 0}
 	return true
 }

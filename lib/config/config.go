@@ -25,3 +25,8 @@ func (c *Config) RootDirecotry() string {
 func GetConfig() *Config {
 	return &conf
 }
+
+func Info() {
+	return 
+
+}

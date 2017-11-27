@@ -1,13 +1,17 @@
 package audioghost
 
 import (
-	"github.com/zweifuchs/audioghost/lib/config"
+	"database/sql"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/zweifuchs/audioghost/lib/config"
 	"log"
-	"strings"
 	"sort"
+	"strings"
 
 )
+
+//var db *sql.DB
 
 type ByLength []string
 
@@ -21,9 +25,15 @@ func (s ByLength) Less(i, j int) bool {
 	return len(s[i]) < len(s[j])
 }
 
+func checkErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 type Librarian struct {
-	conf *config.Config
-	audiobooks Audiobooks
+	conf        *config.Config
+	audiobooks  Audiobooks
 	collections Collections
 }
 
@@ -55,7 +65,7 @@ func sortBooksAndCollections(books *Audiobooks, collections *Collections) {
 	fmt.Println("Sorting....")
 
 	var cpaths []string
-	for k,_ := range *collections {
+	for k, _ := range *collections {
 		cpaths = append(cpaths, k)
 	}
 	fmt.Println(cpaths)
@@ -65,10 +75,10 @@ func sortBooksAndCollections(books *Audiobooks, collections *Collections) {
 	// sort audiobooks first
 	for _, c := range cpaths {
 		for _, b := range *books {
-			fmt.Printf("\"%s\" ::: \"%s\"\n",b.Path, c)
-			if strings.HasPrefix(b.Path,c) {
+			fmt.Printf("\"%s\" ::: \"%s\"\n", b.Path, c)
+			if strings.HasPrefix(b.Path, c) {
 				for _, tst := range *collections {
-					if _,ok := tst.Audiobooks[b.Path]; ok {
+					if _, ok := tst.Audiobooks[b.Path]; ok {
 						tst.RemoveAudioBook(b)
 					}
 				}
@@ -98,8 +108,8 @@ func (l *Librarian) Init(c *config.Config) {
 	sortBooksAndCollections(&l.audiobooks, &l.collections)
 
 	fmt.Println("\n\nBooks:")
-	for _,v := range l.audiobooks {
-		fmt.Printf("%s,%s,\n",v.Name, v.Playtime)
+	for _, v := range l.audiobooks {
+		fmt.Printf("%s,%s,\n", v.Name, v.Playtime)
 	}
 
 	fmt.Println("\nCollections:")
@@ -107,10 +117,93 @@ func (l *Librarian) Init(c *config.Config) {
 		fmt.Printf("\n\n%s mit \n", v.Name)
 		fmt.Println("===========")
 		for _, b := range v.Collections {
-			fmt.Println("Collection:",b.Name)
+			fmt.Println("Collection:", b.Name)
 		}
-		for _,b := range v.Audiobooks {
-			fmt.Println("Audiobook:",b.Name)
+		for _, b := range v.Audiobooks {
+			fmt.Println("Audiobook:", b.Name)
 		}
 	}
+
+	/*
+	 DB STUFF
+	*/
+	fmt.Println("Saving to DB:")
+	db, err := sql.Open("mysql", "audioghost:123456@/audioghost")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer db.Close()
+	err = db.Ping()
+	if err != nil {
+		// do something here
+	}
+
+	/*
+	CREAT TABLE
+	*/
+	db.Exec("DROP TABLE audiobooks;");
+	db.Exec("DROP TABLE collections;");
+	res, err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS audiobooks
+		 (
+		    ID INT NOT NULL AUTO_INCREMENT,
+		    PRIMARY KEY(ID),
+		    Name VARCHAR(255),
+		    Path VARCHAR(2047),
+		    Files TEXT,
+		    Playtime BIGINT,
+		    Description TEXT
+		 );
+	`)
+	res, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS collections
+		 (
+		    ID INT NOT NULL AUTO_INCREMENT,
+		    PRIMARY KEY(ID),
+		    Name VARCHAR(255),
+		    Path VARCHAR(2047),
+		    Playtime BIGINT
+		 );
+	`)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	/*
+	INSERT AUDIOBOOKS
+	*/
+
+	//for _book := range l.audiobooks {
+	//	fmt.Printf("%t, %s \n",book, book)
+	//}
+
+	for _,book := range l.audiobooks {
+		_, err := db.Exec("INSERT INTO audiobooks (Name,Path,Files,Playtime,Description) VALUES (?,?,?,?,?)",
+			book.Name,
+			book.Path,
+			strings.Join(book.Files,","),
+			book.Playtime,
+			book.Description,
+		)
+		checkErr(err)
+	}
+
+	for _, collection := range l.collections {
+		_, err := db.Exec("INSERT INTO collections (Name,Path,Playtime) VALUES (?,?,?)",
+			collection.Name,
+			collection.Path,
+			collection.Playtime,
+		)
+		checkErr(err)
+	}
+
+	//	//defer stmt.Close()
+	//
+	//
+	//
+	//	//stmt.Close()
+	//}
+
+	fmt.Println("Db result:", res)
+
 }
