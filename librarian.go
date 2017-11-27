@@ -8,28 +8,7 @@ import (
 	"log"
 	"sort"
 	"strings"
-
 )
-
-//var db *sql.DB
-
-type ByLength []string
-
-func (s ByLength) Len() int {
-	return len(s)
-}
-func (s ByLength) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-func (s ByLength) Less(i, j int) bool {
-	return len(s[i]) < len(s[j])
-}
-
-func checkErr(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
 
 type Librarian struct {
 	conf        *config.Config
@@ -37,21 +16,21 @@ type Librarian struct {
 	collections Collections
 }
 
+// Sorting collections
+// this takes a map of collections [PATH]Collection and puts the nexted one to the right place
 func sortCollections(collections *Collections) {
 	var cpaths []string
 	for k, _ := range *collections {
 		cpaths = append(cpaths, k)
 	}
-	fmt.Println(cpaths)
-	sort.Sort(ByLength(cpaths))
-	fmt.Println(cpaths)
 
+	// sorting. ByLength is defined in helper.go
+	sort.Sort(ByLength(cpaths))
 	for _, c := range cpaths {
 		for _, cc := range cpaths {
 			if strings.HasPrefix(c, cc) && c != cc {
 				for _, tst := range *collections {
 					if _, ok := tst.Collections[cc]; ok {
-						//sortCollections(&tst.Collections)
 						delete(tst.Collections, c)
 					}
 				}
@@ -61,21 +40,17 @@ func sortCollections(collections *Collections) {
 	}
 }
 
-func sortBooksAndCollections(books *Audiobooks, collections *Collections) {
-	fmt.Println("Sorting....")
-
+func sortBooks(books *Audiobooks, collections *Collections) {
 	var cpaths []string
 	for k, _ := range *collections {
 		cpaths = append(cpaths, k)
 	}
-	fmt.Println(cpaths)
-	sort.Sort(ByLength(cpaths))
-	fmt.Println(cpaths)
 
-	// sort audiobooks first
+	// sorting. ByLength is defined in helper.go
+	sort.Sort(ByLength(cpaths))
+
 	for _, c := range cpaths {
 		for _, b := range *books {
-			fmt.Printf("\"%s\" ::: \"%s\"\n", b.Path, c)
 			if strings.HasPrefix(b.Path, c) {
 				for _, tst := range *collections {
 					if _, ok := tst.Audiobooks[b.Path]; ok {
@@ -86,9 +61,6 @@ func sortBooksAndCollections(books *Audiobooks, collections *Collections) {
 			}
 		}
 	}
-
-	// sort collections
-	sortCollections(collections)
 }
 
 func (l *Librarian) Init(c *config.Config) {
@@ -100,12 +72,20 @@ func (l *Librarian) Init(c *config.Config) {
 	l.collections = make(Collections)
 
 	l.collections.AddCollection(l.conf.RootDirecotry(), "root")
-	err := ScanDir(l, directory)
-	if err != nil {
-		log.Fatal(err)
+
+
+	// Force Rescan?
+	if l.conf.Rescan {
+		err := ScanDir(l, directory)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
-	sortBooksAndCollections(&l.audiobooks, &l.collections)
+	// Get DB Data
+
+	sortBooks(&l.audiobooks, &l.collections)
+	sortCollections(&l.collections)
 
 	fmt.Println("\n\nBooks:")
 	for _, v := range l.audiobooks {

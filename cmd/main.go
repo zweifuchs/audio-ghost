@@ -2,10 +2,6 @@ package main
 
 import (
 	"fmt"
-	_ "io/ioutil"
-
-	_ "os"
-	_ "strings"
 	ag "github.com/zweifuchs/audioghost"
 	dd "github.com/zweifuchs/audioghost/lib/debug"
 	"github.com/zweifuchs/audioghost/lib/config"
@@ -15,12 +11,8 @@ import (
 func main() {
 	defer dd.TimeTracker(time.Now(),"main")
 
-	c := config.GetConfig()
-	fmt.Printf(c.RootDirecotry())
-	directory := c.RootDirecotry()
 	librarian := new(ag.Librarian)
 	librarian.Init(config.GetConfig())
 
-	fmt.Println("Scanning directory", directory)
-
+	fmt.Println("Thank you for using our service ...")
 }

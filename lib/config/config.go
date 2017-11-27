@@ -5,6 +5,7 @@ import "flag"
 type Config struct {
 	rootDirectory string
 	verbosity int
+	Rescan bool
 }
 
 var conf Config
@@ -15,6 +16,7 @@ func init() {
 
 func (c *Config) ReadCmd() {
 	flag.StringVar(&c.rootDirectory, "dir", "./", "directory to scan")
+	flag.BoolVar(&c.Rescan, "forceRescan", false, "Force Drop Databases And Rescan")
 	flag.Parse()
 }
 
