@@ -43,11 +43,11 @@ func ScanDir(librarian *Librarian ,llbooks *Audiobooks, llcollections *Collectio
 	}
 
 	/*
-	CREAT TABLE
+	CREATE TABLE
 	*/
-	db.Exec("DROP TABLE audiobooks;");
-	db.Exec("DROP TABLE collections;");
 	db.Exec("DROP TABLE files;");
+	db.Exec("DROP TABLE collections;");
+	db.Exec("DROP TABLE audiobooks;");
 	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS audiobooks
 		 (
@@ -55,7 +55,6 @@ func ScanDir(librarian *Librarian ,llbooks *Audiobooks, llcollections *Collectio
 		    PRIMARY KEY(ID),
 		    Name VARCHAR(255),
 		    Path VARCHAR(2047),
-		    Files TEXT,
 		    Playtime BIGINT,
 		    Description TEXT
 		 ) ENGINE=INNODB;
@@ -81,6 +80,7 @@ func ScanDir(librarian *Librarian ,llbooks *Audiobooks, llcollections *Collectio
 		    ID INT NOT NULL AUTO_INCREMENT,
 		    PRIMARY KEY(ID),
 		    Path VARCHAR(2047),
+		    Track INT,
 		    Playtime BIGINT,
 		    Audiobook_id INT NOT NULL,
 		    INDEX audiobook_ind1 (Audiobook_id),
@@ -98,10 +98,9 @@ func ScanDir(librarian *Librarian ,llbooks *Audiobooks, llcollections *Collectio
 	//}
 
 	for _, book := range *books {
-		_, err := db.Exec("INSERT INTO audiobooks (Name,Path,Files,Playtime,Description) VALUES (?,?,?,?,?)",
+		_, err := db.Exec("INSERT INTO audiobooks (Name,Path,Playtime,Description) VALUES (?,?,?,?)",
 			book.Name,
 			book.Path,
-			strings.Join(book.Files, string(librarian.conf.PathListSeperator)),
 			book.Playtime,
 			book.Description,
 		)
@@ -116,9 +115,10 @@ func ScanDir(librarian *Librarian ,llbooks *Audiobooks, llcollections *Collectio
 
 		fmt.Println(audiobook_id)
 		for _, file := range book.Files {
-			_, err = db.Exec("INSERT INTO files (Path,Playtime,Audiobook_id) VALUES (?,?,?)",
-				file,
-				0,
+			_, err = db.Exec("INSERT INTO files (Path,Playtime,Track,Audiobook_id) VALUES (?,?,?,?)",
+				file.Path,
+				file.Playtime,
+				file.Track,
 				audiobook_id,
 			)
 			checkErr(err)
@@ -188,9 +188,11 @@ func getBooks(librarian *Librarian, audiobooks *Audiobooks) error{
 
 	for rows.Next() {
 		var r = new(Audiobook)
-		err = rows.Scan(&r.Id, &r.Name, &r.Path,&r.FilesAsText,&r.Playtime,&r.Description)
+		err = rows.Scan(&r.Id, &r.Name, &r.Path,&r.Playtime,&r.Description)
 		audiobooks.AddAudioBook(r)
 	}
+
+	
 	return err
 }
 

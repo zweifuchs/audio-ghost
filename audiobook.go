@@ -16,7 +16,7 @@ type Audiobook struct {
 	Name        string
 	Path        string
 	FilesAsText string
-	Files       []string
+	Files       []MediaFile
 	Playtime    time.Duration
 	Description string
 }
@@ -24,6 +24,7 @@ type Audiobook struct {
 type Audiobooks map[string]*Audiobook
 
 func (book *Audiobook) AddFiles() filepath.WalkFunc {
+	var trcknr int = 0
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			log.Print(err)
@@ -33,9 +34,10 @@ func (book *Audiobook) AddFiles() filepath.WalkFunc {
 			length, _ := calcmp3length(path)
 			fmt.Printf("Adding %s to %s playtime %s \n", path, book.Name, length)
 			book.Playtime += length
-			book.Files = append(book.Files, path)
+			book.Files = append(book.Files, MediaFile{Name: book.Name, Path: path, AudioBook: book ,Track: trcknr,Playtime: time.Duration(length)})
 		}
 		//fmt.Println(book)
+		trcknr += 1
 		return nil
 	}
 }

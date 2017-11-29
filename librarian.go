@@ -111,3 +111,7 @@ func (l *Librarian) Init(c *config.Config) {
 
 
 }
+
+func (l *Librarian) GetFile() {
+
+}
