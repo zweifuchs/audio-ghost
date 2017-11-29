@@ -1,14 +1,20 @@
 package config
 
-import "flag"
+import (
+	"flag"
+	"os"
+)
 
 type Config struct {
 	rootDirectory string
 	verbosity int
 	Rescan bool
+	PathListSeperator rune
 }
 
-var conf Config
+var conf = Config{
+	PathListSeperator: os.PathListSeparator,
+}
 
 func init() {
 	conf.ReadCmd()

@@ -76,14 +76,15 @@ func (l *Librarian) Init(c *config.Config) {
 
 	// Force Rescan?
 	if l.conf.Rescan {
-		err := ScanDir(&l.audiobooks, &l.collections, directory)
-		checkErr(err)
-	} else {
-		err := getBooks(&l.audiobooks)
-		checkErr(err)
-		err = getCollections(&l.collections)
+		err := ScanDir(l, &l.audiobooks, &l.collections, directory)
 		checkErr(err)
 	}
+
+	err := getBooks(l, &l.audiobooks)
+	checkErr(err)
+	err = getCollections(l, &l.collections)
+	checkErr(err)
+
 
 	// Get DB Data
 
@@ -108,14 +109,5 @@ func (l *Librarian) Init(c *config.Config) {
 	}
 
 
-
-	//	//defer stmt.Close()
-	//
-	//
-	//
-	//	//stmt.Close()
-	//}
-
-	// fmt.Println("Db result:", res)
 
 }
